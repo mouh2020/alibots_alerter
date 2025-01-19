@@ -15,6 +15,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class PreviewActivity : AppCompatActivity() {
+    var is_use_preview = false
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -26,7 +27,20 @@ class PreviewActivity : AppCompatActivity() {
         val chat_id = findViewById<EditText>(R.id.chat_id)
         val messageToSend = findViewById<EditText>(R.id.message)
         val excel_path = intent.getStringExtra("excel_path")
+        token.setOnClickListener {
+            is_use_preview = false
+        }
+        chat_id.setOnClickListener {
+            is_use_preview = false
+        }
+        messageToSend.setOnClickListener {
+            is_use_preview = false
+        }
         previewBtn.setOnClickListener {
+            if (chat_id.text.toString() == "" || token.text.toString() == "" || messageToSend.text.toString() == ""){
+                Toast.makeText(this@PreviewActivity, "You should fill all inputs.", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
             val bot = TelegramBot(token.text.toString())
             CoroutineScope(Dispatchers.IO).launch {
                 try {
@@ -37,6 +51,7 @@ class PreviewActivity : AppCompatActivity() {
                     withContext(Dispatchers.Main) {
                         if (response.isOk) {
                             Toast.makeText(this@PreviewActivity, "Message sent successfully to:"+chat_id.text, Toast.LENGTH_SHORT).show()
+                            is_use_preview = true
                         } else {
                             Toast.makeText(
                                 this@PreviewActivity,
@@ -54,6 +69,10 @@ class PreviewActivity : AppCompatActivity() {
             }
         }
         nextBtn.setOnClickListener {
+            if (is_use_preview == false){
+                Toast.makeText(this@PreviewActivity, "You should preview your message successfully at least once", Toast.LENGTH_LONG).show()
+                return@setOnClickListener
+            }
             val intent = Intent(this, AlertActivity::class.java)
             intent.putExtra("excel_file_path",excel_path.toString())
             intent.putExtra("bot_token",token.text.toString())
@@ -64,6 +83,5 @@ class PreviewActivity : AppCompatActivity() {
             val intent = Intent(this, MainActivity::class.java)
             startActivity(intent)
         }
-
     }
 }
